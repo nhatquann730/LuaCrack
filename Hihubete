@@ -1,0 +1,58 @@
+-- LocalScript: Nút nhỏ chat /e dance2
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextChatService = game:GetService("TextChatService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Xóa GUI cũ nếu có
+if playerGui:FindFirstChild("Dance2MiniButton") then
+    playerGui.Dance2MiniButton:Destroy()
+end
+
+-- Tạo GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "Dance2MiniButton"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- Nút nhỏ (có thể kéo)
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 50, 0, 50) -- nút 50x50
+button.Position = UDim2.new(0.9, 0, 0.8, 0) -- mặc định góc phải dưới
+button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+button.BackgroundTransparency = 0.2
+button.Text = "💃" -- icon nhỏ cho vui
+button.TextSize = 24
+button.Font = Enum.Font.SourceSansBold
+button.TextColor3 = Color3.fromRGB(255,255,255)
+button.Active = true
+button.Draggable = true -- cho phép kéo
+button.Parent = screenGui
+
+-- Hàm gửi chat
+local function sendChatMessage(msg)
+    -- Chat cũ
+    local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+    if chatEvents and chatEvents:FindFirstChild("SayMessageRequest") then
+        chatEvents.SayMessageRequest:FireServer(msg, "All")
+        return
+    end
+
+    -- Chat mới
+    if TextChatService and TextChatService.ChatInputBarConfiguration then
+        local channel = TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+        if channel then
+            channel:SendAsync(msg)
+            return
+        end
+    end
+
+    warn("Không thể gửi chat: game có thể chặn hoặc dùng hệ thống chat riêng.")
+end
+
+-- Khi bấm thì chat /e dance2
+button.MouseButton1Click:Connect(function()
+    sendChatMessage("/e dance2")
+end)
