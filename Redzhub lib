@@ -1,0 +1,149 @@
+local redzlib = loadstring(game:HttpGet("https://gist.githubusercontent.com/MjContiga1/54c07e52fc2aab8873b68d91a71d11c6/raw/fb4f1d6a7c89465f3b39bc00eeff09af24b88f20/Redz%2520hub.lua"))()
+
+-- Create window
+local Window = redzlib:MakeWindow({
+    Title = "Multi-Select Test",
+    SubTitle = "Dropdown Example",
+    SaveFolder = "RedzMultiSelectTest"
+})
+
+Window:AddMinimizeButton({
+    Button = { Image = "rbxassetid://139438145143663", BackgroundTransparency = 0 },
+    Corner = { CornerRadius = UDim.new(35, 1) },
+})
+
+-- Create tab
+local MainTab = Window:MakeTab({"Main", "rbxassetid://7733960981"}) -- Add your icon ID
+Window:SelectTab(MainTab)
+
+local PlayerTab = Window:MakeTab({"Player", "rbxassetid://7743875962"}) -- Add your icon ID
+Window:SelectTab(PlayerTab)
+
+local Section = MainTab:AddSection({"Testing Section"})
+
+local Paragraph = MainTab:AddParagraph({"Paragraph", "Test How Use Properly This Lib ui\nSecond Line"})
+
+-- SINGLE-SELECT DROPDOWN (original behavior)
+MainTab:AddDropdown({
+    Name = "Single Select",
+    Options = {"Option A", "Option B", "Option C"},
+    Default = "Option A",
+    Callback = function(Value)
+        print("Single selection:", Value)
+    end
+})
+
+-- MULTI-SELECT DROPDOWN (new functionality)
+local fruitsDropdown = MainTab:AddDropdown({
+    Name = "Select Fruits",
+    Options = {"Leopard", "Dragon", "Venom", "Dough", "Shadow"},
+    Default = {"Leopard", "Dough"}, -- Table for multiple defaults
+    MultiSelect = true, -- Enable multi-select
+    Callback = function(Selected)
+        if type(Selected) == "table" then
+            print("Selected fruits:", table.concat(Selected, ", "))
+            -- Example: Save selections for auto-farm
+            _G.SelectedFruits = Selected
+        else
+            print("Selected fruit:", Selected)
+        end
+    end
+})
+
+MainTab:AddSlider({
+    Name = "Farm Speed",
+    Min = 1,
+    Max = 10,
+    Default = 5,
+    Callback = function(Value)
+        print("Farm speed set to:", Value)
+    end
+})
+
+-- CONTROL BUTTONS
+MainTab:AddButton({"Select All Fruits", function()
+    fruitsDropdown:Select({"Leopard", "Dragon", "Venom", "Dough", "Shadow"})
+end})
+
+MainTab:AddButton({"Clear Selection", function()
+    fruitsDropdown:Select({}) -- Empty table clears selection
+end})
+
+MainTab:AddButton({"Print", function(Value)
+print("Test")
+end})
+
+-- EXAMPLE USAGE WITH AUTO-FARM
+local autoFarmToggle = MainTab:AddToggle({
+    Name = "Auto Farm Selected Fruits",
+    Default = false,
+    Callback = function(Enabled)
+        if Enabled then
+            if _G.SelectedFruits and #_G.SelectedFruits > 0 then
+                print("Starting farm for:", table.concat(_G.SelectedFruits, ", "))
+                -- Add your farming logic here
+            else
+                Window:Dialog({
+                    Title = "Warning",
+                    Text = "No fruits selected!",
+                    Options = {{"OK", function() end}}
+                })
+                autoFarmToggle:Set(false) -- Turn toggle off
+            end
+        else
+            print("Stopped auto farming")
+        end
+    end
+})
+
+local Section = PlayerTab:AddSection({"Player Section Test"})
+
+local autoFarmToggle = PlayerTab:AddToggle({
+    Name = "Example Farm",
+    Default = false,
+    Callback = function(Enabled)
+        if Enabled then
+            if _G.SelectedFruits and #_G.SelectedFruits > 0 then
+                print("Starting farm for:", table.concat(_G.SelectedFruits, ", "))
+                -- Add your farming logic here
+            else
+                Window:Dialog({
+                    Title = "Warning",
+                    Text = "No fruits selected!",
+                    Options = {{"OK", function() end}}
+                })
+                autoFarmToggle:Set(false) -- Turn toggle off
+            end
+        else
+            print("Stopped auto farming")
+        end
+    end
+})
+
+PlayerTab:AddTextBox({
+  Name = "Name item",
+  Description = "1 Item on 1 Server", 
+  PlaceholderText = "item only",
+  Callback = function(Value)
+    
+  end
+})
+
+-- Variable to store current speed
+_G.PlayerSpeed = 16 -- default walk speed
+
+PlayerTab:AddTextBox({
+    Name = "Walk Speed",
+    Description = "Set your player speed",
+    PlaceholderText = "Enter speed number",
+    Callback = function(Value)
+        local num = tonumber(Value) -- convert to number
+        if num then
+            _G.PlayerSpeed = num
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = _G.PlayerSpeed
+            print("Walk speed set to:", _G.PlayerSpeed)
+        else
+            print("Invalid number input!")
+        end
+    end
+})
