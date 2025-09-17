@@ -1,157 +1,76 @@
-local RoundLib = {}
+-- Gui trong suốt + bo tròn + nút ẩn/hiện
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "RoundGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Window object
-local Window = {}
-Window.__index = Window
+-- Main frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 400, 0, 300)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BackgroundTransparency = 0.2 -- trong suốt
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
 
--- Tab object
-local Tab = {}
-Tab.__index = Tab
+-- Bo góc
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 20)
+Corner.Parent = MainFrame
 
--- Button object
-local Button = {}
-Button.__index = Button
+-- Tiêu đề
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -40, 0, 40)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "JAMESON HUB"
+Title.Font = Enum.Font.Code -- font giống Minecraft
+Title.TextSize = 22
+Title.TextColor3 = Color3.fromRGB(255,255,255)
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = MainFrame
 
--- Hàm tạo window
-function RoundLib:MakeWindow(config)
-    config = config or {}
-    local title = config.Name or "RoundLib Window"
+-- Nút toggle (+)
+local Toggle = Instance.new("TextButton")
+Toggle.Size = UDim2.new(0, 30, 0, 30)
+Toggle.Position = UDim2.new(1, -35, 0, 5)
+Toggle.BackgroundColor3 = Color3.fromRGB(50,50,50)
+Toggle.Text = "+"
+Toggle.TextSize = 22
+Toggle.TextColor3 = Color3.fromRGB(255,255,255)
+Toggle.Font = Enum.Font.Code
+Toggle.Parent = MainFrame
 
-    -- ScreenGui
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-    ScreenGui.Name = "RoundLib"
-    ScreenGui.ResetOnSpawn = false
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0.5, 0)
+ToggleCorner.Parent = Toggle
 
-    -- Main Frame
-    local Main = Instance.new("Frame")
-    Main.Name = "Main"
-    Main.Size = UDim2.new(0, 500, 0, 300)
-    Main.Position = UDim2.new(0.5, 0, 0.5, 0)
-    Main.AnchorPoint = Vector2.new(0.5,0.5)
-    Main.BackgroundColor3 = Color3.fromRGB(20,20,20)
-    Main.BorderSizePixel = 0
-    Main.Parent = ScreenGui
+-- Nội dung ví dụ
+local Button = Instance.new("TextButton")
+Button.Size = UDim2.new(0, 200, 0, 40)
+Button.Position = UDim2.new(0.5, 0, 0.5, 0)
+Button.AnchorPoint = Vector2.new(0.5, 0.5)
+Button.BackgroundColor3 = Color3.fromRGB(70,70,70)
+Button.Text = "Auto Farm"
+Button.Font = Enum.Font.Code
+Button.TextSize = 20
+Button.TextColor3 = Color3.fromRGB(255,255,255)
+Button.Parent = MainFrame
 
-    local corner = Instance.new("UICorner", Main)
-    corner.CornerRadius = UDim.new(0,12)
+local ButtonCorner = Instance.new("UICorner")
+ButtonCorner.CornerRadius = UDim.new(0, 12)
+ButtonCorner.Parent = Button
 
-    -- Dragging
-    local UIS = game:GetService("UserInputService")
-    local dragging, dragStart, startPos
-    Main.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = Main.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
+-- Toggle logic
+local isOpen = true
+Toggle.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    for _, v in pairs(MainFrame:GetChildren()) do
+        if v ~= Toggle and v ~= Corner then
+            v.Visible = isOpen
         end
-    end)
-    UIS.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStart
-            Main.Position = UDim2.new(
-                startPos.X.Scale, startPos.X.Offset + delta.X,
-                startPos.Y.Scale, startPos.Y.Offset + delta.Y
-            )
-        end
-    end)
-
-    -- Title
-    local Title = Instance.new("TextLabel")
-    Title.Text = title
-    Title.Font = Enum.Font.SourceSansBold
-    Title.TextColor3 = Color3.new(1,1,1)
-    Title.TextSize = 20
-    Title.BackgroundTransparency = 1
-    Title.Size = UDim2.new(1, -20, 0, 40)
-    Title.Position = UDim2.new(0,10,0,0)
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.Parent = Main
-
-    -- Tab holder
-    local TabHolder = Instance.new("Frame")
-    TabHolder.Size = UDim2.new(0,120,1,-40)
-    TabHolder.Position = UDim2.new(0,0,0,40)
-    TabHolder.BackgroundColor3 = Color3.fromRGB(25,25,25)
-    TabHolder.BorderSizePixel = 0
-    TabHolder.Parent = Main
-    Instance.new("UICorner", TabHolder).CornerRadius = UDim.new(0,8)
-
-    -- Content holder
-    local Content = Instance.new("Frame")
-    Content.Size = UDim2.new(1,-130,1,-40)
-    Content.Position = UDim2.new(0,130,0,40)
-    Content.BackgroundTransparency = 1
-    Content.Parent = Main
-
-    local WindowObj = setmetatable({
-        Main = Main,
-        TabHolder = TabHolder,
-        Content = Content,
-        Tabs = {}
-    }, Window)
-
-    return WindowObj
-end
-
--- Hàm tạo tab
-function Window:MakeTab(config)
-    config = config or {}
-    local name = config.Name or "Tab"
-
-    local ButtonTab = Instance.new("TextButton")
-    ButtonTab.Size = UDim2.new(1,0,0,30)
-    ButtonTab.BackgroundColor3 = Color3.fromRGB(35,35,35)
-    ButtonTab.Text = name
-    ButtonTab.TextColor3 = Color3.new(1,1,1)
-    ButtonTab.Parent = self.TabHolder
-
-    local TabContent = Instance.new("Frame")
-    TabContent.Size = UDim2.new(1,0,1,0)
-    TabContent.BackgroundTransparency = 1
-    TabContent.Visible = false
-    TabContent.Parent = self.Content
-
-    local TabObj = setmetatable({
-        Name = name,
-        Content = TabContent
-    }, Tab)
-
-    table.insert(self.Tabs, TabObj)
-
-    -- Tab switching
-    ButtonTab.MouseButton1Click:Connect(function()
-        for _,t in pairs(self.Tabs) do
-            t.Content.Visible = false
-        end
-        TabContent.Visible = true
-    end)
-
-    return TabObj
-end
-
--- Thêm Button
-function Tab:AddButton(config)
-    config = config or {}
-    local name = config.Name or "Button"
-    local callback = config.Callback or function() end
-
-    local Btn = Instance.new("TextButton")
-    Btn.Size = UDim2.new(0,200,0,30)
-    Btn.Position = UDim2.new(0,10,0,#self.Content:GetChildren()*35)
-    Btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    Btn.Text = name
-    Btn.TextColor3 = Color3.new(1,1,1)
-    Btn.Parent = self.Content
-
-    Btn.MouseButton1Click:Connect(callback)
-
-    return setmetatable({Object = Btn}, Button)
-end
-
-return RoundLib
+    end
+    Toggle.Text = isOpen and "-" or "+"
+end)
